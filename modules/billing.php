@@ -17,7 +17,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         $pdo->prepare('UPDATE bills SET status = IF(paid_amount >= total_amount, "paid", "partial") WHERE id=?')->execute([$billId]);
         flash('Payment added.');
     }
-    header('Location:/public/index.php?module=billing'); exit;
+    header('Location: ' . module_url('billing'));
+    exit;
 }
 $patients=$pdo->query('SELECT id,uhid,first_name,last_name FROM patients ORDER BY id DESC LIMIT 200')->fetchAll();
 $bills=$pdo->query("SELECT b.*, CONCAT(p.first_name,' ',p.last_name) patient_name,p.uhid FROM bills b JOIN patients p ON p.id=b.patient_id ORDER BY b.id DESC LIMIT 100")->fetchAll();

@@ -61,7 +61,7 @@ function module_nav(): void
     ];
     echo '<div class="mb-3">';
     foreach ($links as $m => $label) {
-        echo '<a class="btn btn-sm btn-outline-primary me-2 mb-2" href="' . e(app_url('/public/index.php')) . '?module=' . e($m) . '">' . e($label) . '</a>';
+        echo '<a class="btn btn-sm btn-outline-primary me-2 mb-2" href="' . e(module_url($m)) . '">' . e($label) . '</a>';
     }
     echo '</div>';
 }

@@ -11,7 +11,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         $pdo->prepare('UPDATE samples SET status=? WHERE id=?')->execute([$_POST['status']==='approved'?'reported':'processed',(int)$_POST['sample_id']]);
         flash('Lab result saved.');
     }
-    header('Location:/public/index.php?module=lab'); exit;
+    header('Location: ' . module_url('lab'));
+    exit;
 }
 $bookings=$pdo->query("SELECT b.id, p.uhid, CONCAT(p.first_name,' ',p.last_name) patient_name FROM diagnostic_bookings b JOIN patients p ON p.id=b.patient_id ORDER BY b.id DESC LIMIT 100")->fetchAll();
 $samples=$pdo->query("SELECT s.*, r.status report_status, r.result_text FROM samples s LEFT JOIN reports r ON r.sample_id=s.id ORDER BY s.id DESC LIMIT 100")->fetchAll();

@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = (int)$pdo->lastInsertId();
     audit($pdo, (int)$user['id'], 'create', 'patients', 'patient', $id);
     flash('Patient registered successfully.');
-    header('Location: /public/index.php?module=patients');
+    header('Location: ' . module_url('patients'));
     exit;
 }
 

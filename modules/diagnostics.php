@@ -8,7 +8,9 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         $pdo->prepare('INSERT INTO diagnostic_booking_tests(booking_id,test_id) VALUES(?,?)')->execute([$bookingId,(int)$tid]);
     }
     audit($pdo,(int)$user['id'],'create','diagnostics','diagnostic_booking',$bookingId);
-    flash('Diagnostics booking created.'); header('Location:/public/index.php?module=diagnostics'); exit;
+    flash('Diagnostics booking created.');
+    header('Location: ' . module_url('diagnostics'));
+    exit;
 }
 $patients=$pdo->query('SELECT id,uhid,first_name,last_name FROM patients ORDER BY id DESC LIMIT 200')->fetchAll();
 $tests=$pdo->query('SELECT id,name,category,price FROM test_master WHERE is_active=1 ORDER BY category,name')->fetchAll();
