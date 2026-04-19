@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS patients (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    full_name VARCHAR(150) NOT NULL,
+    email VARCHAR(190) NOT NULL,
+    phone VARCHAR(40) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uniq_patients_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
