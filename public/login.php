@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/layout.php';
 
 if (current_user()) {
-    header('Location: /public/index.php');
+    header('Location: ' . app_url('/public/index.php'));
     exit;
 }
 
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ok = login(trim($_POST['email'] ?? ''), $_POST['password'] ?? '');
     if ($ok) {
         flash('Login successful.');
-        header('Location: /public/index.php');
+        header('Location: ' . app_url('/public/index.php'));
         exit;
     }
 

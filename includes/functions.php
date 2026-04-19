@@ -23,6 +23,27 @@ function flash(?string $message = null, string $type = 'success'): ?array
     return $f;
 }
 
+
+function app_base_path(): string
+{
+    $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+
+    if ($scriptName === '') {
+        return '';
+    }
+
+    $base = (string) preg_replace('#/(public/)?[^/]+\.php$#', '', $scriptName);
+    return rtrim($base, '/');
+}
+
+function app_url(string $path = ''): string
+{
+    $base = app_base_path();
+    $normalizedPath = '/' . ltrim($path, '/');
+
+    return ($base === '' ? '' : $base) . $normalizedPath;
+}
+
 function uhid(): string
 {
     return 'UHID' . date('Ymd') . strtoupper(bin2hex(random_bytes(3)));
