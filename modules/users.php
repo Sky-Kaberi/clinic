@@ -7,7 +7,8 @@ if(!has_role(['Super Admin'])){
 if($_SERVER['REQUEST_METHOD']==='POST'){
     $pdo->prepare('INSERT INTO users(name,email,password_hash,role,is_active) VALUES (?,?,?,?,1)')->execute([trim($_POST['name']),trim($_POST['email']),password_hash($_POST['password'], PASSWORD_DEFAULT),$_POST['role']]);
     flash('User created.');
-    header('Location:/public/index.php?module=users'); exit;
+    header('Location: ' . module_url('users'));
+    exit;
 }
 $rows=$pdo->query('SELECT id,name,email,role,is_active,created_at FROM users ORDER BY id DESC')->fetchAll();
 $roles=['Super Admin','Receptionist','Front Desk Executive','Doctor','Technician','Radiologist','Lab Admin','Cashier','Centre Manager'];

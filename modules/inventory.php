@@ -15,7 +15,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         $pdo->prepare('INSERT INTO inventory_transactions(inventory_id, txn_type, quantity, notes, created_by) VALUES (?,?,?,?,?)')->execute([(int)$_POST['id'],'purchase',(float)$_POST['add_qty'],trim($_POST['notes']),(int)$user['id']]);
         flash('Purchase entry recorded.');
     }
-    header('Location:/public/index.php?module=inventory'); exit;
+    header('Location: ' . module_url('inventory'));
+    exit;
 }
 $rows=$pdo->query('SELECT *, (quantity <= reorder_level) AS low_stock FROM inventory ORDER BY low_stock DESC, item_name')->fetchAll();
 ?>

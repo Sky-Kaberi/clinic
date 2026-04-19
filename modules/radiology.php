@@ -3,7 +3,8 @@ $pdo=db(); $user=current_user();
 if($_SERVER['REQUEST_METHOD']==='POST'){
     $pdo->prepare('INSERT INTO radiology_workflow(booking_id, technician_id, report_text, status, approved_by) VALUES (?,?,?,?,?)')->execute([(int)$_POST['booking_id'], ($_POST['technician_id']?:null), trim($_POST['report_text']), $_POST['status'], $_POST['status']==='approved'?(int)$user['id']:null]);
     flash('Radiology entry saved.');
-    header('Location:/public/index.php?module=radiology'); exit;
+    header('Location: ' . module_url('radiology'));
+    exit;
 }
 $bookings=$pdo->query("SELECT b.id, p.uhid, CONCAT(p.first_name,' ',p.last_name) patient_name FROM diagnostic_bookings b JOIN patients p ON p.id=b.patient_id WHERE b.booking_type IN ('imaging','ecg') ORDER BY b.id DESC LIMIT 100")->fetchAll();
 $techs=$pdo->query("SELECT id,name FROM users WHERE role IN ('Technician','Radiologist')")->fetchAll();

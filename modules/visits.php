@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$visitId, trim($_POST['medicines']), trim($_POST['prescription_notes']), (int)$user['id']]);
     audit($pdo,(int)$user['id'],'create','visits','visit',$visitId);
     flash('OPD visit and prescription saved.');
-    header('Location: /public/index.php?module=visits');
+    header('Location: ' . module_url('visits'));
     exit;
 }
 $patients=$pdo->query('SELECT id,uhid,first_name,last_name FROM patients ORDER BY id DESC LIMIT 200')->fetchAll();

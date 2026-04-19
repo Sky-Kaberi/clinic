@@ -3,7 +3,8 @@ $pdo=db(); $user=current_user();
 if($_SERVER['REQUEST_METHOD']==='POST'){
     $pdo->prepare('INSERT INTO communication_logs(patient_id, channel, template_name, message_body, delivery_status, sent_by) VALUES (?,?,?,?,?,?)')->execute([($_POST['patient_id']?:null),$_POST['channel'],trim($_POST['template_name']),trim($_POST['message_body']),'queued',(int)$user['id']]);
     flash('Message queued (gateway integration placeholder).');
-    header('Location:/public/index.php?module=communications'); exit;
+    header('Location: ' . module_url('communications'));
+    exit;
 }
 $patients=$pdo->query('SELECT id,uhid,first_name,last_name,mobile FROM patients ORDER BY id DESC LIMIT 200')->fetchAll();
 $rows=$pdo->query('SELECT cl.*, CONCAT(p.first_name," ",p.last_name) patient_name FROM communication_logs cl LEFT JOIN patients p ON p.id=cl.patient_id ORDER BY cl.id DESC LIMIT 100')->fetchAll();

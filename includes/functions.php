@@ -26,14 +26,26 @@ function flash(?string $message = null, string $type = 'success'): ?array
 
 function app_base_path(): string
 {
+    static $basePath = null;
+
+    if ($basePath !== null) {
+        return $basePath;
+    }
+
     $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
 
     if ($scriptName === '') {
-        return '';
+        $basePath = '';
+        return $basePath;
     }
 
-    $base = (string) preg_replace('#/(public/)?[^/]+\.php$#', '', $scriptName);
-    return rtrim($base, '/');
+    $base = (string) preg_replace('#/public/[^/]+\.php$#', '', $scriptName);
+    if ($base === $scriptName) {
+        $base = (string) preg_replace('#/[^/]+\.php$#', '', $scriptName);
+    }
+
+    $basePath = rtrim($base, '/');
+    return $basePath;
 }
 
 function app_url(string $path = ''): string
@@ -42,6 +54,12 @@ function app_url(string $path = ''): string
     $normalizedPath = '/' . ltrim($path, '/');
 
     return ($base === '' ? '' : $base) . $normalizedPath;
+}
+
+function module_url(string $module, array $query = []): string
+{
+    $params = array_merge(['module' => $module], $query);
+    return app_url('/public/index.php') . '?' . http_build_query($params);
 }
 
 function uhid(): string

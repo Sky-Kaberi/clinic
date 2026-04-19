@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         audit($pdo,(int)$user['id'],'update','appointments','appointment',(int)$_POST['id']);
         flash('Appointment updated.');
     }
-    header('Location: /public/index.php?module=appointments');
+    header('Location: ' . module_url('appointments'));
     exit;
 }
 
