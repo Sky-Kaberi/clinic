@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
+  username VARCHAR(60) NOT NULL UNIQUE,
   email VARCHAR(120) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   role VARCHAR(50) NOT NULL,
@@ -25,6 +26,7 @@ CREATE TABLE IF NOT EXISTS patients (
 CREATE TABLE IF NOT EXISTS doctors (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
+  email VARCHAR(120) NULL UNIQUE,
   specialization VARCHAR(100) NULL,
   consultation_fee DECIMAL(10,2) DEFAULT 0,
   schedule_json JSON NULL,
@@ -38,7 +40,7 @@ CREATE TABLE IF NOT EXISTS appointments (
   doctor_id INT NOT NULL,
   appointment_date DATE NOT NULL,
   slot_time TIME NULL,
-  status VARCHAR(30) NOT NULL DEFAULT 'booked',
+  status ENUM('booked','walk_in','follow_up','rescheduled','completed','cancelled') NOT NULL DEFAULT 'booked',
   token_no INT NULL,
   notes VARCHAR(255) NULL,
   created_by INT NULL,
@@ -96,7 +98,7 @@ CREATE TABLE IF NOT EXISTS diagnostic_bookings (
   priority ENUM('normal','priority') DEFAULT 'normal',
   fasting_note VARCHAR(255) NULL,
   sample_schedule_at DATETIME NULL,
-  status VARCHAR(30) DEFAULT 'booked',
+  status ENUM('booked','sample_collected','processing','verified','approved','released','cancelled') NOT NULL DEFAULT 'booked',
   created_by INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (patient_id) REFERENCES patients(id),
@@ -115,7 +117,7 @@ CREATE TABLE IF NOT EXISTS samples (
   id INT AUTO_INCREMENT PRIMARY KEY,
   booking_id INT NOT NULL,
   barcode VARCHAR(50) UNIQUE,
-  status VARCHAR(30) DEFAULT 'collected',
+  status ENUM('collected','processing','processed','reported','released') NOT NULL DEFAULT 'collected',
   collected_by INT NULL,
   collected_at DATETIME NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -127,14 +129,17 @@ CREATE TABLE IF NOT EXISTS reports (
   id INT AUTO_INCREMENT PRIMARY KEY,
   sample_id INT NOT NULL UNIQUE,
   result_text TEXT,
-  status ENUM('draft','verified','approved') DEFAULT 'draft',
+  status ENUM('draft','verified','approved','released') DEFAULT 'draft',
   entered_by INT,
   approved_by INT NULL,
+  released_by INT NULL,
   approved_at DATETIME NULL,
+  released_at DATETIME NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (sample_id) REFERENCES samples(id),
   FOREIGN KEY (entered_by) REFERENCES users(id),
-  FOREIGN KEY (approved_by) REFERENCES users(id)
+  FOREIGN KEY (approved_by) REFERENCES users(id),
+  FOREIGN KEY (released_by) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS radiology_workflow (
@@ -156,6 +161,7 @@ CREATE TABLE IF NOT EXISTS bills (
   bill_type ENUM('consultation','diagnostics','combined','package') NOT NULL,
   total_amount DECIMAL(10,2) NOT NULL,
   paid_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+  refund_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
   status ENUM('unpaid','partial','paid','refunded') NOT NULL DEFAULT 'unpaid',
   created_by INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -211,6 +217,28 @@ CREATE TABLE IF NOT EXISTS communication_logs (
   FOREIGN KEY (sent_by) REFERENCES users(id)
 );
 
+
+ALTER TABLE patients
+  ADD UNIQUE KEY uq_patients_mobile (mobile),
+  ADD UNIQUE KEY uq_patients_email (email),
+  ADD INDEX idx_patients_name (first_name, last_name);
+
+ALTER TABLE appointments
+  ADD INDEX idx_appointments_patient_date (patient_id, appointment_date),
+  ADD INDEX idx_appointments_doctor_date (doctor_id, appointment_date),
+  ADD UNIQUE KEY uq_appointment_patient_doctor_slot (patient_id, doctor_id, appointment_date, slot_time),
+  ADD UNIQUE KEY uq_appointment_doctor_slot (doctor_id, appointment_date, slot_time);
+
+ALTER TABLE bills
+  ADD CONSTRAINT chk_bill_amounts CHECK (total_amount >= 0 AND paid_amount >= 0 AND refund_amount >= 0 AND paid_amount <= total_amount),
+  ADD INDEX idx_bills_patient_status (patient_id, status);
+
+ALTER TABLE payments
+  ADD INDEX idx_payments_bill_created (bill_id, created_at);
+
+ALTER TABLE reports
+  ADD INDEX idx_reports_status (status);
+
 CREATE TABLE IF NOT EXISTS audit_logs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NULL,
@@ -222,15 +250,15 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-INSERT INTO users(name, email, password_hash, role) VALUES
-('Super Admin', 'admin@clinic.local', '$2y$12$895eYIu.u.Tpn21njuc69uXV6hnjsCetdxgEhIM321g8a3H04R8Wm', 'Super Admin'),
-('Dr. Raj Sharma', 'doctor@clinic.local', '$2y$12$SDFqubTon5KV/wgUprapB.rLPv/rbvMOjMdClxhj83dqEDJXuY.Na', 'Doctor'),
-('Cashier User', 'cashier@clinic.local', '$2y$12$6PyxrH2PafceFQr8DhAuqu62zoUuWWez0nwh09UTx3DPoaOWIVtGO', 'Cashier')
+INSERT INTO users(name, username, email, password_hash, role) VALUES
+('Super Admin', 'admin', 'admin@clinic.local', '$2y$12$895eYIu.u.Tpn21njuc69uXV6hnjsCetdxgEhIM321g8a3H04R8Wm', 'Super Admin'),
+('Dr. Raj Sharma', 'doctor', 'doctor@clinic.local', '$2y$12$SDFqubTon5KV/wgUprapB.rLPv/rbvMOjMdClxhj83dqEDJXuY.Na', 'Doctor'),
+('Cashier User', 'cashier', 'cashier@clinic.local', '$2y$12$6PyxrH2PafceFQr8DhAuqu62zoUuWWez0nwh09UTx3DPoaOWIVtGO', 'Cashier')
 ON DUPLICATE KEY UPDATE email=email;
 
-INSERT INTO doctors(name,specialization,consultation_fee) VALUES
-('Dr. Raj Sharma','General Medicine',500),
-('Dr. Anita Rao','Cardiology',800)
+INSERT INTO doctors(name,email,specialization,consultation_fee) VALUES
+('Dr. Raj Sharma','doctor@clinic.local','General Medicine',500),
+('Dr. Anita Rao','anita.rao@clinic.local','Cardiology',800)
 ON DUPLICATE KEY UPDATE name=name;
 
 INSERT INTO test_master(code,name,category,price,preparation_note) VALUES

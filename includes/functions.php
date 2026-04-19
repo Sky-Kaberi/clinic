@@ -77,3 +77,28 @@ function audit(PDO $pdo, int $userId, string $action, string $module, ?string $e
     $stmt = $pdo->prepare('INSERT INTO audit_logs(user_id, action, module, entity_type, entity_id) VALUES (?,?,?,?,?)');
     $stmt->execute([$userId, $action, $module, $entityType, $entityId]);
 }
+
+function normalize_optional(?string $value): ?string
+{
+    $value = trim((string) $value);
+    return $value === '' ? null : $value;
+}
+
+function is_valid_mobile(string $mobile): bool
+{
+    return (bool) preg_match('/^[0-9]{10,15}$/', $mobile);
+}
+
+function is_valid_email(string $email): bool
+{
+    return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+function require_roles(array $roles): void
+{
+    if (!has_role($roles)) {
+        flash('You are not authorized to access this module.', 'danger');
+        header('Location: ' . module_url('dashboard'));
+        exit;
+    }
+}
