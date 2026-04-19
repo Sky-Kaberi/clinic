@@ -17,7 +17,7 @@ function current_user(): ?array
 function require_login(): void
 {
     if (!current_user()) {
-        header('Location: /public/login.php');
+        header('Location: ' . app_url('/public/login.php'));
         exit;
     }
 }

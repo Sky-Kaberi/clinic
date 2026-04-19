@@ -20,10 +20,10 @@ function render_header(string $title): void
 <body class="bg-light">
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-3">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/public/index.php">ClinicMS</a>
+    <a class="navbar-brand" href="<?= e(app_url('/public/index.php')) ?>">ClinicMS</a>
     <?php if ($user): ?>
     <div class="text-white small">Logged in as <?= e($user['name']) ?> (<?= e($user['role']) ?>)</div>
-    <a class="btn btn-sm btn-outline-light ms-3" href="/public/logout.php">Logout</a>
+    <a class="btn btn-sm btn-outline-light ms-3" href="<?= e(app_url('/public/logout.php')) ?>">Logout</a>
     <?php endif; ?>
   </div>
 </nav>
@@ -61,7 +61,7 @@ function module_nav(): void
     ];
     echo '<div class="mb-3">';
     foreach ($links as $m => $label) {
-        echo '<a class="btn btn-sm btn-outline-primary me-2 mb-2" href="/public/index.php?module=' . e($m) . '">' . e($label) . '</a>';
+        echo '<a class="btn btn-sm btn-outline-primary me-2 mb-2" href="' . e(app_url('/public/index.php')) . '?module=' . e($m) . '">' . e($label) . '</a>';
     }
     echo '</div>';
 }
